@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121410">
 <title>Carnavalito y Cueca</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +32,9 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55; }
+html, body { overflow-x: hidden; }
+.block > *, .stand > *, .controls > *, .two > *, .build > *, .tips > *, .checks > *, .script > * { min-width: 0; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55; -webkit-text-size-adjust: 100%; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
 .wrap { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 h1, h2, h3 { font-family: var(--font-display); line-height: 1.12; text-wrap: balance; margin: 0; }
@@ -41,8 +44,9 @@ h3 { font-size: 1.15rem; font-weight: 700; }
 p { margin: 0; max-width: 68ch; }
 a { color: inherit; }
 .muted { color: var(--muted); }
-.eyebrow { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.eyebrow { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 700; text-wrap: balance; }
 .mono { font-family: var(--font-mono); }
+p .mono { white-space: nowrap; }
 button, input { font: inherit; color: inherit; }
 :focus-visible { outline: 3px solid var(--z, var(--ink)); outline-offset: 2px; }
 .z-norte { --z: var(--norte); --z-soft: var(--norte-soft); --z-ink: var(--norte-ink); }
@@ -78,6 +82,7 @@ section.block { padding-block: 44px 8px; display: grid; gap: 18px; scroll-margin
 .timeline .t-centro { background: var(--centro); }
 .timeline .t-free { background: repeating-linear-gradient(135deg, var(--sunk) 0 6px, var(--bg) 6px 12px); color: var(--muted); border-right: 0; }
 .timeline b { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; }
+.timeline span, .timeline b { overflow: hidden; text-overflow: ellipsis; }
 .tl-scale { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
 .table-x { overflow-x: auto; }
 table.esc { width: 100%; border-collapse: collapse; min-width: 640px; }
@@ -198,11 +203,46 @@ footer { padding-block: 40px 60px; color: var(--muted); font-size: 0.9rem; }
 
 @media (max-width: 640px) {
   body { font-size: 16px; }
+  header.top { padding-block: 28px 22px; }
+  section.block { padding-block: 34px 4px; gap: 14px; }
+  .card { padding: 14px; }
+  .controls { padding: 14px; gap: 12px; }
   .script .card { grid-template-columns: 1fr; }
-  .seq .r { grid-template-columns: 110px repeat(var(--n), 1fr); }
-  .seq { min-width: 440px; }
+  .script p { font-size: 1rem; }
+
+  /* cuadrícula de pasos: el nombre arriba, las celdas a todo el ancho */
+  .seq { min-width: 0; }
+  .seq .r { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
+  .seq .lab { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 10px 0 2px; }
+  .seq .lab:empty { display: none; }
+  .cell { min-height: 42px; font-size: 0.95rem; }
+  .seq .gap-l { margin-left: 6px; }
+
   .melody { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .prog { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .tempo { min-width: 0; }
+  .seg { width: 100%; }
+  .seg button { flex: 1; padding: 8px 10px; }
+  .form li { grid-template-columns: 64px 1fr; }
+
+  /* línea de tiempo: texto solo donde cabe */
+  .timeline { height: 46px; }
+  .timeline > div { padding: 0 5px; font-size: 0.72rem; }
+  .timeline .t-talk *, .timeline .t-free * { display: none; }
+
+  /* tablas como fichas apiladas */
+  .table-x { overflow-x: visible; }
+  table.esc, table.rub { min-width: 0; }
+  table.esc thead, table.rub thead { display: none; }
+  table.esc tr, table.rub tr { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  table.esc tr:last-child, table.rub tr:last-child { border-bottom: 0; }
+  table.esc td, table.rub td { display: block; padding: 0; border: 0; }
+  table.esc td[data-label], table.rub td[data-label] { grid-column: 1 / -1; font-size: 0.95rem; }
+  table.rub td:first-child { grid-column: 1 / -1; font-weight: 700; }
+  td[data-label]::before { content: attr(data-label) ": "; font-weight: 700; color: var(--muted); }
+}
+@media (max-width: 520px) {
+  .melody { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .cell.now { transform: none; } }
 </style>
@@ -384,12 +424,12 @@ footer { padding-block: 40px 60px; color: var(--muted); font-size: 0.9rem; }
     <table class="rub">
       <thead><tr><th>Criterio</th><th>En el video</th><th>En la ficha</th></tr></thead>
       <tbody>
-        <tr><td>1 · Zonas en el mapa</td><td>Placa 02 y el guion «Mapa»</td><td>Mapa con límites y regiones</td></tr>
-        <tr><td>2 · Características físicas</td><td>Guion de cada zona y placas 03 y 04</td><td>Fila «Característica física»</td></tr>
-        <tr><td>3 · Características culturales</td><td>Guion de cada zona y placas 03 y 04</td><td>Fila «Característica cultural»</td></tr>
-        <tr><td>4 · Selección de instrumentos</td><td>Explicas qué instrumento reemplaza a cuál (flauta por quena)</td><td>Fila «Relación con la zona»</td></tr>
-        <tr><td>5 · Clasificación</td><td>Cierre, placa 05 y textos bajo cada recuadro</td><td>Tabla de clasificación</td></tr>
-        <tr><td>6 · Ejecución</td><td>Capas grabadas con la pista guía, sin perder el pulso</td><td>—</td></tr>
+        <tr><td>1 · Zonas en el mapa</td><td data-label="En el video">Placa 02 y el guion «Mapa»</td><td data-label="En la ficha">Mapa con límites y regiones</td></tr>
+        <tr><td>2 · Características físicas</td><td data-label="En el video">Guion de cada zona y placas 03 y 04</td><td data-label="En la ficha">Fila «Característica física»</td></tr>
+        <tr><td>3 · Características culturales</td><td data-label="En el video">Guion de cada zona y placas 03 y 04</td><td data-label="En la ficha">Fila «Característica cultural»</td></tr>
+        <tr><td>4 · Selección de instrumentos</td><td data-label="En el video">Explicas qué instrumento reemplaza a cuál (flauta por quena)</td><td data-label="En la ficha">Fila «Relación con la zona»</td></tr>
+        <tr><td>5 · Clasificación</td><td data-label="En el video">Cierre, placa 05 y textos bajo cada recuadro</td><td data-label="En la ficha">Tabla de clasificación</td></tr>
+        <tr><td>6 · Ejecución</td><td data-label="En el video">Capas grabadas con la pista guía, sin perder el pulso</td><td data-label="En la ficha">No aplica: se evalúa en el video</td></tr>
       </tbody>
     </table>
   </div>
@@ -458,7 +498,7 @@ for (const s of SEGMENTS) {
   $('#esc-body').append(h('tr', {}, [
     h('td', { text: `${fmt(s.from)}–${fmt(s.to)}` }),
     h('td', {}, [h('span', { class: 'dot', style: `background:${colorOf(s.kind)}` }), h('strong', { text: s.part })]),
-    h('td', { text: s.see }), h('td', { text: s.hear }),
+    h('td', { text: s.see, 'data-label': 'Se ve' }), h('td', { text: s.hear, 'data-label': 'Se escucha' }),
   ]));
 }
 const words = t => t.split(/\s+/).length;
@@ -472,7 +512,7 @@ for (const s of SEGMENTS.filter(s => SCRIPT[s.id])) {
 
 /* ---------- teleprompter ---------- */
 const tp = $('#tp'), tpText = $('#tp-text');
-let tpRun = false, tpSpeed = store.get('tpSpeed', 3), tpSize = store.get('tpSize', 44), tpLast = 0, wake = null;
+let tpRun = false, tpSpeed = store.get('tpSpeed', 3), tpSize = store.get('tpSize', window.innerWidth < 640 ? 30 : 44), tpLast = 0, wake = null;
 for (const s of SEGMENTS.filter(s => SCRIPT[s.id])) tpText.append(h('h4', { text: s.part }), h('p', { text: SCRIPT[s.id] }));
 const tpApply = () => { tpText.style.fontSize = tpSize + 'px'; $('#tp-speed').textContent = 'vel. ' + tpSpeed; $('#tp-play').textContent = tpRun ? 'Pausa' : 'Iniciar'; };
 const tpLoop = ts => { if (!tpRun) return; const dt = tpLast ? (ts - tpLast) / 1000 : 0; tpLast = ts; tpText.scrollTop += dt * tpSpeed * 14; requestAnimationFrame(tpLoop); };
@@ -784,7 +824,7 @@ const ICON = {
 /* ---------- construir atriles ---------- */
 for (const root of $$('.controls[data-zone]')) {
   const id = root.dataset.zone, z = ZONES[id], st = zoneState(id), u = (UI[id] = { root, scope: root.parentElement });
-  const unitLabel = v => `${z.unit} = ${v}`;
+  const unitLabel = v => `${z.unit} = ${v}`;
 
   const playBtn = h('button', { class: 'play', type: 'button', 'aria-label': 'Reproducir', html: ICON.play, onclick: () => (P.playing && P.z === z ? stop() : start(id)) });
   u.playBtn = playBtn;
@@ -891,7 +931,7 @@ for (const root of $$('.controls[data-zone]')) {
 
 /* ---------- lista ---------- */
 const CHECKS = [
-  ['Preparación', ['Conseguir guitarra, pandero, tambor y flauta dulce', 'Fabricar las chajchas caseras', 'Armar el tormento casero', 'Tocar el carnavalito con la guía a ♩ = 100', 'Tocar la cueca con la guía a ♩. = 100', 'Leer el guion en voz alta con el teleprompter']],
+  ['Preparación', ['Conseguir guitarra, pandero, tambor y flauta dulce', 'Fabricar las chajchas caseras', 'Armar el tormento casero', 'Tocar el carnavalito con la guía a ♩ = 100', 'Tocar la cueca con la guía a ♩. = 100', 'Leer el guion en voz alta con el teleprompter']],
   ['Grabación', ['Inicio a cámara', 'Zona Norte a cámara', 'Carnavalito: bombo, chajchas y flauta', 'Zona Centro a cámara', 'Cueca: guitarra, palmas, pandero y tormento', 'Cierre mostrando cada instrumento']],
   ['Edición y entrega', ['Video armado con las 5 placas', 'Duración menor a 4:00', 'Revisar que el pandero tenga parche y el bombo sea membranófono (o corregir la ficha)', 'Subir el video y la ficha']],
 ];
