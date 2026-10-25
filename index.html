@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Carnavalito y Cueca</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: una sola columna de ensayo con navegación fija; cada ritmo es un "atril" con su cuadrícula de pasos, como un secuenciador. */
+:root {
+  --bg: #F1F2EE; --surface: #FFFFFF; --sunk: #E6E8E1; --ink: #1E201B; --muted: #5C6157; --line: #D3D7CC;
+  --norte: #B0601C; --norte-soft: #F6E5D1; --norte-ink: #7A3F0E;
+  --centro: #487826; --centro-soft: #E0EBD3; --centro-ink: #2E5113;
+  --talk: #8C9184;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --z: var(--ink); --z-soft: var(--sunk); --z-ink: var(--ink);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121410; --surface: #1A1D17; --sunk: #252920; --ink: #E9EBE4; --muted: #A3A89A; --line: #343A2E;
+  --norte: #E39A55; --norte-soft: #3B2914; --norte-ink: #F4C495;
+  --centro: #8DC160; --centro-soft: #203016; --centro-ink: #C2E2A3; --talk: #9A9F90; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #121410; --surface: #1A1D17; --sunk: #252920; --ink: #E9EBE4; --muted: #A3A89A; --line: #343A2E;
+  --norte: #E39A55; --norte-soft: #3B2914; --norte-ink: #F4C495;
+  --centro: #8DC160; --centro-soft: #203016; --centro-ink: #C2E2A3; --talk: #9A9F90; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.12; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.3rem, 6vw, 3.6rem); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.2rem); font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 1.15rem; font-weight: 700; }
+p { margin: 0; max-width: 68ch; }
+a { color: inherit; }
+.muted { color: var(--muted); }
+.eyebrow { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.mono { font-family: var(--font-mono); }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--z, var(--ink)); outline-offset: 2px; }
+.z-norte { --z: var(--norte); --z-soft: var(--norte-soft); --z-ink: var(--norte-ink); }
+.z-centro { --z: var(--centro); --z-soft: var(--centro-soft); --z-ink: var(--centro-ink); }
+
+/* encabezado */
+header.top { padding-block: 40px 28px; display: grid; gap: 18px; }
+.who { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); }
+.who strong { color: var(--ink); }
+.ready { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.ready > div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.ready .k { font-weight: 700; }
+.ready code { font-family: var(--font-mono); font-size: 0.8rem; word-break: break-all; color: var(--muted); }
+.progress { display: flex; align-items: center; gap: 12px; }
+.bar { flex: 1; height: 8px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--ink); border-radius: 99px; transition: width .3s; }
+
+/* navegación */
+nav.sec { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+nav.sec .wrap { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-block: 8px; }
+nav.sec a { text-decoration: none; padding: 6px 12px; border-radius: 99px; white-space: nowrap; font-size: 0.92rem; color: var(--muted); }
+nav.sec a:hover { background: var(--sunk); color: var(--ink); }
+
+section.block { padding-block: 44px 8px; display: grid; gap: 18px; scroll-margin-top: 64px; }
+.lead { font-size: 1.08rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; min-width: 0; }
+
+/* escaleta */
+.timeline { display: flex; height: 54px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); background: var(--sunk); }
+.timeline > div { display: flex; flex-direction: column; justify-content: center; padding: 0 8px; color: var(--surface); font-size: 0.78rem; line-height: 1.2; min-width: 0; overflow: hidden; white-space: nowrap; border-right: 1px solid var(--surface); }
+.timeline .t-talk { background: var(--talk); }
+.timeline .t-norte { background: var(--norte); }
+.timeline .t-centro { background: var(--centro); }
+.timeline .t-free { background: repeating-linear-gradient(135deg, var(--sunk) 0 6px, var(--bg) 6px 12px); color: var(--muted); border-right: 0; }
+.timeline b { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; }
+.tl-scale { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+.table-x { overflow-x: auto; }
+table.esc { width: 100%; border-collapse: collapse; min-width: 640px; }
+table.esc th, table.esc td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.esc th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+table.esc td:first-child { font-family: var(--font-mono); font-size: 0.85rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 1px; }
+
+/* guion */
+.script { display: grid; gap: 12px; }
+.script .card { display: grid; grid-template-columns: 112px 1fr; gap: 6px 18px; }
+.script .when { font-family: var(--font-mono); font-size: 0.85rem; color: var(--muted); }
+.script .when strong { display: block; color: var(--ink); font-family: var(--font-display); font-size: 1.05rem; }
+.script p { font-size: 1.08rem; }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 9px 16px; cursor: pointer; font-weight: 700; }
+.btn:hover { background: var(--sunk); }
+.btn.primary { background: var(--z, var(--ink)); color: var(--surface); border-color: transparent; }
+.btn.primary:hover { filter: brightness(1.08); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* atril de ritmo */
+.stand { display: grid; gap: 16px; }
+.stand-head { display: grid; gap: 6px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-family: var(--font-mono); font-size: 0.8rem; padding: 4px 10px; border-radius: 99px; background: var(--z-soft); color: var(--z-ink); font-weight: 700; }
+.controls { display: grid; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.seg { display: inline-flex; background: var(--sunk); border-radius: 99px; padding: 3px; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 99px; cursor: pointer; font-weight: 700; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.play { width: 58px; height: 58px; border-radius: 50%; border: 0; background: var(--z); color: var(--surface); cursor: pointer; display: grid; place-items: center; flex: none; }
+.play svg { width: 24px; height: 24px; }
+.tempo { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 220px; }
+.tempo input { flex: 1; accent-color: var(--z); }
+.tempo output { font-family: var(--font-mono); font-weight: 700; min-width: 7.5ch; font-variant-numeric: tabular-nums; }
+.layers { display: flex; flex-wrap: wrap; gap: 8px; }
+.layers label { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); cursor: pointer; font-size: 0.92rem; user-select: none; }
+.layers input { accent-color: var(--z); margin: 0; }
+.layers label:has(input:checked) { background: var(--z-soft); border-color: var(--z); color: var(--z-ink); font-weight: 700; }
+.small { font-size: 0.88rem; }
+
+.grid-x { overflow-x: auto; }
+.seq { display: grid; gap: 4px; min-width: 520px; }
+.seq .r { display: grid; grid-template-columns: 190px repeat(var(--n), 1fr); gap: 4px; align-items: stretch; }
+.seq .lab { padding: 6px 10px 6px 0; display: grid; gap: 1px; align-content: center; }
+.seq .lab b { font-size: 0.98rem; }
+.seq .lab span { font-size: 0.78rem; color: var(--muted); }
+.seq .h { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); text-align: center; padding: 2px 0; font-weight: 700; }
+.seq .h.beat { color: var(--ink); }
+.seq .grp { font-family: var(--font-mono); font-size: 0.72rem; text-align: center; border-radius: 6px; padding: 3px 0; font-weight: 700; }
+.seq .grp.g68 { background: var(--z-soft); color: var(--z-ink); }
+.seq .grp.g34 { background: var(--sunk); color: var(--ink); }
+.cell { min-height: 46px; border-radius: 8px; background: var(--sunk); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 700; font-size: 1rem; color: var(--z-ink); transition: transform .06s; }
+.seq .gap-l { margin-left: 8px; }
+.cell.hit { background: var(--z-soft); box-shadow: inset 0 0 0 2px var(--z); }
+.cell.acc { background: var(--z); color: var(--surface); }
+.cell.now { outline: 3px solid var(--ink); outline-offset: 1px; transform: scale(1.04); }
+.cell.off { opacity: .35; }
+
+.melody { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.mbar { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: grid; gap: 6px; background: var(--surface); min-width: 0; }
+.mbar .ch { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; }
+.mbar .notes { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; }
+.note { border-radius: 6px; background: var(--z-soft); color: var(--z-ink); font-weight: 700; font-size: 0.82rem; text-align: center; padding: 6px 0; white-space: nowrap; overflow: hidden; }
+.note.now { background: var(--z); color: var(--surface); }
+.mbar.now { border-color: var(--z); box-shadow: 0 0 0 2px var(--z); }
+.figs { display: flex; flex-wrap: wrap; gap: 14px; }
+.fig { display: grid; justify-items: center; gap: 4px; font-weight: 700; }
+.fig small { font-weight: 400; color: var(--muted); font-size: 0.78rem; }
+.fig svg { display: block; }
+.prog { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+.prog div { text-align: center; padding: 10px 0; border-radius: 8px; background: var(--sunk); font-family: var(--font-mono); font-weight: 700; }
+.prog div.now { background: var(--z); color: var(--surface); }
+
+.rec { display: grid; gap: 10px; background: var(--z-soft); border-radius: 12px; padding: 16px; color: var(--z-ink); }
+.rec .big { font-family: var(--font-display); font-size: clamp(1.5rem, 4.5vw, 2.4rem); font-weight: 800; line-height: 1.1; color: var(--ink); }
+.rec .meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-mono); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.rec .bar { background: var(--surface); }
+.rec .bar > i { background: var(--z); transition: none; }
+.form { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.form li { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 6px 10px; border-radius: 8px; font-size: 0.95rem; }
+.form li span:first-child { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.form li.now { background: var(--z); color: var(--surface); }
+.form li.now span:first-child { color: var(--surface); }
+.tips { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.tips .card { display: grid; gap: 6px; align-content: start; }
+.tips .card b { font-family: var(--font-display); font-size: 1.02rem; }
+.cls { font-family: var(--font-mono); font-size: 0.75rem; color: var(--z-ink); background: var(--z-soft); border-radius: 99px; padding: 2px 8px; justify-self: start; font-weight: 700; }
+
+/* instrumentos y pasos */
+.build { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.build .card { display: grid; gap: 10px; align-content: start; }
+ol.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
+ol.steps li::marker { font-family: var(--font-mono); font-weight: 700; color: var(--muted); }
+.note-box { border-left: 4px solid var(--z, var(--ink)); background: var(--sunk); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 0.95rem; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+
+/* checklist */
+.checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.checks .card { display: grid; gap: 8px; align-content: start; }
+.checks label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; padding: 4px 0; }
+.checks input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--ink); flex: none; }
+.checks label:has(input:checked) span { color: var(--muted); text-decoration: line-through; }
+table.rub { width: 100%; border-collapse: collapse; min-width: 600px; }
+table.rub th, table.rub td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.rub th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+footer { padding-block: 40px 60px; color: var(--muted); font-size: 0.9rem; }
+
+/* teleprompter */
+#tp { position: fixed; inset: 0; z-index: 50; background: #0d0e0c; color: #f1f1ec; display: grid; grid-template-rows: auto 1fr; }
+#tp .tp-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); background: #1b1d19; }
+#tp .tp-bar button, #tp .tp-bar select { background: #2a2d27; color: #f1f1ec; border: 0; border-radius: 99px; padding: 8px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+#tp .tp-bar span { font-family: var(--font-mono); font-size: 0.85rem; color: #b9bcb2; }
+#tp .tp-text { overflow-y: auto; padding: 30vh max(24px, env(safe-area-inset-right, 0px)) 70vh max(24px, env(safe-area-inset-left, 0px)); font-family: var(--font-display); font-weight: 700; line-height: 1.35; }
+#tp .tp-text h4 { font-family: var(--font-mono); font-size: 0.4em; letter-spacing: .12em; text-transform: uppercase; color: #9fa395; margin: 1.6em 0 .4em; }
+#tp .tp-text p { max-width: 30ch; margin: 0 auto; }
+#tp .tp-text h4 { max-width: 75ch; margin-left: auto; margin-right: auto; }
+#tp .guide { position: fixed; left: 0; right: 0; top: 38vh; height: 2px; background: rgba(255,255,255,.18); pointer-events: none; }
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .script .card { grid-template-columns: 1fr; }
+  .seq .r { grid-template-columns: 110px repeat(var(--n), 1fr); }
+  .seq { min-width: 440px; }
+  .melody { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .prog { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .cell.now { transform: none; } }
+</style>
+
+<header class="top wrap">
+  <div class="eyebrow">MUSV0059 · Actividad formativa · Semana 4</div>
+  <h1>Carnavalito y cueca</h1>
+  <p class="lead">Todo lo que necesitas para grabar el video sin compañeros: un guion corto, los dos ritmos para practicar con audio, una pista guía para grabar cada instrumento por separado y los pasos para juntarlo en la edición.</p>
+  <div class="who"><span>Estudiante: <strong>Carry Constanza Gutiérrez</strong></span><span>Zona Norte: <strong>carnavalito</strong></span><span>Zona Centro: <strong>cueca</strong></span><span>Duración objetivo: <strong>3:30 de 4:00</strong></span></div>
+  <div class="ready">
+    <div><span class="eyebrow">Listo</span><span class="k">Ficha breve en Word y PDF</span><span class="muted small">2 páginas, con tu nombre, el mapa y la clasificación.</span><code>Ficha_breve_Norte_Centro.docx · .pdf</code></div>
+    <div><span class="eyebrow">Listo</span><span class="k">5 placas para el video</span><span class="muted small">Portada, mapa, Zona Norte, Zona Centro e instrumentos, en 1920 × 1080.</span><code>placas_video/</code></div>
+    <div><span class="eyebrow">Tu avance</span><span class="k" id="prog-label">0 de 0 pasos</span><div class="progress"><div class="bar"><i id="prog-bar"></i></div></div><span class="muted small">Se marca en la lista del final.</span></div>
+  </div>
+</header>
+
+<nav class="sec" aria-label="Secciones">
+  <div class="wrap">
+    <a href="#plan">Escaleta</a><a href="#guion">Guion</a><a href="#norte">Carnavalito</a><a href="#centro">Cueca</a><a href="#instrumentos">Instrumentos</a><a href="#grabar">Grabar</a><a href="#editar">Editar</a><a href="#lista">Lista</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<section class="block" id="plan">
+  <div class="eyebrow">Escaleta</div>
+  <h2>El video en 3:30</h2>
+  <p>Inicio, desarrollo y cierre, como pide la pauta. Las partes habladas van en gris; las interpretaciones, en el color de cada zona. Queda un margen de 30 s antes del máximo de 4:00.</p>
+  <div>
+    <div class="timeline" id="timeline" aria-label="Línea de tiempo del video"></div>
+    <div class="tl-scale"><span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span></div>
+  </div>
+  <div class="card table-x">
+    <table class="esc">
+      <thead><tr><th>Tiempo</th><th>Parte</th><th>Qué se ve</th><th>Qué se escucha</th></tr></thead>
+      <tbody id="esc-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="block" id="guion">
+  <div class="eyebrow">Guion para hablar a cámara</div>
+  <h2>Lo que vas a decir</h2>
+  <p>Unas 150 palabras por minuto, a ritmo tranquilo. Puedes leerlo desde el teleprompter: pon el computador detrás del celular y la vista quedará casi a cámara.</p>
+  <div class="row"><button class="btn primary" id="tp-open" type="button">Abrir teleprompter</button></div>
+  <div class="script" id="script"></div>
+</section>
+
+<section class="block z-norte" id="norte">
+  <div class="stand">
+    <div class="stand-head">
+      <div class="eyebrow">Zona Norte · altiplano del Norte Grande</div>
+      <h2>Carnavalito</h2>
+      <div class="facts"><span class="chip">compás 2/4</span><span class="chip">meta ♩ = 100</span><span class="chip">37 compases</span><span class="chip">flauta · bombo · chajchas</span></div>
+      <p>Cada tiempo se divide en cuatro: <span class="mono">1 e y a 2 e y a</span>. La célula del huayno es <strong>TAM ti-ti</strong>: una corchea y dos semicorcheas. El bombo y la melodía la repiten todo el tiempo.</p>
+    </div>
+    <div class="controls" data-zone="norte"></div>
+  </div>
+</section>
+
+<section class="block z-centro" id="centro">
+  <div class="stand">
+    <div class="stand-head">
+      <div class="eyebrow">Zona Centro · valle central</div>
+      <h2>Cueca</h2>
+      <div class="facts"><span class="chip">6/8 con 3/4</span><span class="chip">meta ♩. = 100</span><span class="chip">37 compases</span><span class="chip">guitarra · palmas · pandero · tormento</span></div>
+      <p>Cuenta seis corcheas por compás: <span class="mono">1 2 3 4 5 6</span>. La percusión agrupa de a tres (<span class="mono">1-2-3 · 4-5-6</span>) y la guitarra de a dos (<span class="mono">1-2 · 3-4 · 5-6</span>). Esa mezcla de 6/8 con 3/4 se llama sesquiáltera y es el sello de la cueca.</p>
+    </div>
+    <div class="controls" data-zone="centro"></div>
+  </div>
+</section>
+
+<section class="block" id="instrumentos">
+  <div class="eyebrow">Instrumentos</div>
+  <h2>Qué conseguir y qué fabricar</h2>
+  <p>La pauta permite instrumentos escolares o hechos en casa si reproducen el patrón. Lo importante es que la clasificación de la ficha corresponda al instrumento que de verdad tocas.</p>
+  <div class="build">
+    <div class="card z-norte">
+      <h3>Chajchas caseras</h3><span class="cls">Idiófono · Norte</span>
+      <p class="small muted">Imitan las chajchas andinas, hechas con pezuñas de cabra o llama. Tiempo: 20 minutos.</p>
+      <ol class="steps">
+        <li>Junta 24 a 30 tapitas metálicas de bebida.</li>
+        <li>Sobre una tabla vieja, aplánalas un poco con un martillo y hazles un agujero al centro con un clavo.</li>
+        <li>Ensártalas de a 3 o 4 en trozos de lana o cordel, con un nudo entre grupos.</li>
+        <li>Ata todos los trozos a un palo corto o a una pulsera de tela, como un manojo. Al sacudirlo, las tapitas chocan entre sí.</li>
+      </ol>
+    </div>
+    <div class="card z-centro">
+      <h3>Tormento casero</h3><span class="cls">Idiófono · Centro</span>
+      <p class="small muted">El tormento es un cajón de madera golpeado con baquetas que acompaña la cueca entre Valparaíso y el Biobío.</p>
+      <ol class="steps">
+        <li>Busca un cajón de madera de fruta o verdura, o una caja de madera de vino. Una caja de cartón firme sirve, pero suena más apagada.</li>
+        <li>Apóyalo en una silla o en tus rodillas, con un paño debajo para que no vibre contra el piso.</li>
+        <li>Toca con dos cucharas de palo, una en cada mano, alternando. Fuerte en 1 y 4, suave en el resto.</li>
+      </ol>
+    </div>
+    <div class="card z-norte">
+      <h3>Bombo</h3><span class="cls">Membranófono · Norte</span>
+      <p>Usa tu tambor. La maza puede ser una cuchara de palo con un calcetín enrollado en la punta: suena más grave y redondo, como el bombo andino.</p>
+      <div class="note-box">Si no tuvieras tambor: un balde plástico grande boca arriba con cinta de embalaje tensada en tiras cruzadas sobre la boca. La cinta funciona como parche, así que sigue siendo membranófono. Si en cambio golpeas el fondo del balde sin cinta, vibra el plástico y pasa a ser idiófono: en ese caso hay que cambiar la ficha.</div>
+    </div>
+    <div class="card z-centro">
+      <h3>Pandero</h3><span class="cls">Membranófono · Centro</span>
+      <p>Revisa que tenga parche (cuero o plástico). Golpe con la palma cerca del borde y sacudida corta para que suenen las sonajas.</p>
+      <div class="note-box">Si es solo un aro con sonajas, sin parche, es una pandereta y se clasifica como idiófono. Cambia esa fila de la ficha antes de entregar.</div>
+    </div>
+    <div class="card z-norte">
+      <h3>Flauta dulce</h3><span class="cls">Aerófono · Norte</span>
+      <p>Reemplaza a la quena, el aerófono andino de bisel. Solo necesitas cuatro notas: sol, la, do y re. Las digitaciones están en el atril del carnavalito.</p>
+    </div>
+    <div class="card z-centro">
+      <h3>Guitarra</h3><span class="cls">Cordófono · Centro</span>
+      <p>Afínala con una app gratuita de afinador antes de cada sesión. Si es prestada, revisa que no le falte ninguna cuerda: la cueca se toca con las seis.</p>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="grabar">
+  <div class="eyebrow">Grabación por capas</div>
+  <h2>Cómo grabar sin compañeros</h2>
+  <p>Grabas cada instrumento por separado escuchando la misma pista guía. Como todas las tomas siguen el mismo clic, en la edición calzan como si tocara un grupo.</p>
+  <div class="two">
+    <div class="card">
+      <h3>Equipo</h3>
+      <ul class="steps" style="margin:0;padding-left:1.2em;display:grid;gap:6px">
+        <li>Celular en horizontal, sobre un trípode o una torre de libros.</li>
+        <li>Un audífono puesto, conectado al computador con esta guía.</li>
+        <li>Luz de ventana de frente, no detrás.</li>
+        <li>El mismo lugar y la misma ropa en todas las tomas de un ritmo.</li>
+        <li>Celular en modo avión para que no entren llamadas.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Orden de las tomas</h3>
+      <p><strong>Carnavalito:</strong> bombo → chajchas → flauta.</p>
+      <p><strong>Cueca:</strong> guitarra → palmas → pandero → tormento.</p>
+      <p><strong>Partes habladas:</strong> inicio, Zona Norte, Zona Centro y cierre mostrando cada instrumento.</p>
+      <p class="muted small">Graba 2 o 3 tomas de cada capa y quédate con la mejor. Usa siempre el mismo tempo en todas las capas de un ritmo.</p>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Cada toma, paso a paso</h3>
+    <ol class="steps">
+      <li>En el atril del ritmo elige <strong>Pista para grabar</strong>, fija el tempo y deja encendido el clic y las capas que quieras escuchar mientras tocas.</li>
+      <li>Ponte un audífono y baja el volumen hasta oír el clic sin que se filtre al micrófono del celular.</li>
+      <li>Empieza a grabar en el celular y después presiona reproducir en la guía.</li>
+      <li>En la cuenta, aplaude una vez frente a la cámara justo en el clic agudo, cuando el panel diga <strong>¡Palmada!</strong>. Esa palmada sirve para sincronizar las tomas.</li>
+      <li>Toca tu capa siguiendo el panel: muestra la sección, el número de compás y lo que viene.</li>
+      <li>Cuando termine, detén la grabación y revisa que se escuche bien antes de pasar a la siguiente capa.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="block" id="editar">
+  <div class="eyebrow">Edición</div>
+  <h2>Juntar todo en CapCut</h2>
+  <p>Sirve CapCut en el computador o en el celular. Los nombres de los botones cambian un poco entre versiones, pero los pasos son los mismos.</p>
+  <div class="card">
+    <ol class="steps">
+      <li>Crea un proyecto en formato 16:9 e importa todas las tomas y las 5 placas de la carpeta <span class="mono">placas_video</span>.</li>
+      <li>Ordena según la escaleta: placa 01, inicio, placa 02, Zona Norte, carnavalito, placa 04, Zona Centro, cueca, cierre y placa 05.</li>
+      <li>En cada ritmo, deja la primera capa en la pista principal y agrega las demás como superposición (pistas encima).</li>
+      <li>Activa la forma de onda del audio y mueve cada toma hasta que su palmada quede en el mismo punto que la de la primera capa.</li>
+      <li>Corta todas las capas a la vez justo antes del compás 1, para que no se vean la cuenta ni la palmada.</li>
+      <li>Arma la pantalla dividida: el carnavalito en tres columnas y la cueca en una cuadrícula de 2 × 2.</li>
+      <li>Escribe bajo cada recuadro el instrumento y su clasificación, por ejemplo <em>Bombo · membranófono</em>. Esto suma en el criterio 5.</li>
+      <li>Baja cada capa a un 70–80 % de volumen para que la suma no sature, con la flauta y la guitarra un poco más arriba.</li>
+      <li>Revisa que el total dure menos de 4:00 y exporta en 1080p a 30 fps.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="block" id="lista">
+  <div class="eyebrow">Lista</div>
+  <h2>Antes de entregar</h2>
+  <div class="checks" id="checks"></div>
+  <div class="card table-x">
+    <h3 style="margin-bottom:8px">Dónde se cumple cada criterio de la pauta</h3>
+    <table class="rub">
+      <thead><tr><th>Criterio</th><th>En el video</th><th>En la ficha</th></tr></thead>
+      <tbody>
+        <tr><td>1 · Zonas en el mapa</td><td>Placa 02 y el guion «Mapa»</td><td>Mapa con límites y regiones</td></tr>
+        <tr><td>2 · Características físicas</td><td>Guion de cada zona y placas 03 y 04</td><td>Fila «Característica física»</td></tr>
+        <tr><td>3 · Características culturales</td><td>Guion de cada zona y placas 03 y 04</td><td>Fila «Característica cultural»</td></tr>
+        <tr><td>4 · Selección de instrumentos</td><td>Explicas qué instrumento reemplaza a cuál (flauta por quena)</td><td>Fila «Relación con la zona»</td></tr>
+        <tr><td>5 · Clasificación</td><td>Cierre, placa 05 y textos bajo cada recuadro</td><td>Tabla de clasificación</td></tr>
+        <tr><td>6 · Ejecución</td><td>Capas grabadas con la pista guía, sin perder el pulso</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+<footer class="wrap">Fuentes de los datos musicales: Memoria Chilena (huayno y cacharpaya; forma musical según zona; idiófonos) y la guía de rasgueo de cueca de Gabriel Montt para Berklee PULSE. La melodía del carnavalito es de creación propia sobre la escala pentatónica de la menor.</footer>
+
+<div id="tp" hidden role="dialog" aria-label="Teleprompter">
+  <div class="tp-bar">
+    <button type="button" id="tp-play">Iniciar</button>
+    <button type="button" id="tp-slow" aria-label="Más lento">−</button><span id="tp-speed">vel. 3</span><button type="button" id="tp-fast" aria-label="Más rápido">+</button>
+    <button type="button" id="tp-small" aria-label="Letra más chica">A−</button><button type="button" id="tp-big" aria-label="Letra más grande">A+</button>
+    <button type="button" id="tp-top">Al inicio</button>
+    <button type="button" id="tp-close" style="margin-left:auto">Cerrar</button>
+  </div>
+  <div class="tp-text" id="tp-text"></div>
+  <div class="guide"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* sin almacenamiento */ } },
+};
+const h = (tag, attrs = {}, kids = []) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') el.className = v; else if (k === 'text') el.textContent = v; else if (k === 'html') el.innerHTML = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v); else el.setAttribute(k, v);
+  }
+  for (const c of [].concat(kids)) if (c != null) el.append(c);
+  return el;
+};
+const fmt = s => { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+/* ---------- escaleta y guion ---------- */
+const SEGMENTS = [
+  { id: 'inicio', from: 0, to: 22, kind: 'talk', part: 'Inicio', see: 'Placa 01 los primeros 4 s y luego tú a cámara, con los instrumentos detrás.', hear: 'Guion «Inicio».' },
+  { id: 'mapa', from: 22, to: 35, kind: 'talk', part: 'Mapa', see: 'Placa 02 (mapa con las dos zonas).', hear: 'Guion «Mapa», con tu voz encima de la placa.' },
+  { id: 'norte', from: 35, to: 60, kind: 'talk', part: 'Zona Norte', see: 'Tú a cámara mostrando flauta, bombo y chajchas; placa 03 al final.', hear: 'Guion «Zona Norte».' },
+  { id: 'carnavalito', from: 60, to: 105, kind: 'norte', part: 'Carnavalito', see: 'Pantalla dividida en 3: bombo, chajchas y flauta, con su clasificación escrita.', hear: 'Las 3 capas juntas (37 compases).' },
+  { id: 'centro', from: 105, to: 128, kind: 'talk', part: 'Zona Centro', see: 'Tú a cámara con la guitarra; placa 04 al final.', hear: 'Guion «Zona Centro».' },
+  { id: 'cueca', from: 128, to: 175, kind: 'centro', part: 'Cueca', see: 'Cuadrícula 2 × 2: guitarra, palmas, pandero y tormento.', hear: 'Las 4 capas juntas (37 compases).' },
+  { id: 'cierre', from: 175, to: 210, kind: 'talk', part: 'Cierre', see: 'Muestras cada instrumento a cámara; placa 05 los últimos 5 s.', hear: 'Guion «Cierre».' },
+];
+const SCRIPT = {
+  inicio: 'Hola, soy Carry Constanza Gutiérrez. En este video interpreto ritmos de dos zonas naturales de Chile: el carnavalito, de la Zona Norte, y la cueca, de la Zona Centro. Hice el trabajo de forma individual, así que grabé cada instrumento por separado y los junté en la edición, como si fuera un grupo.',
+  mapa: 'La Zona Norte va desde Arica y Parinacota hasta Coquimbo. La Zona Centro va desde Valparaíso hasta el Biobío, en el valle central.',
+  norte: 'Empiezo por el Norte, la zona del desierto de Atacama, uno de los más áridos del mundo, y del altiplano, sobre los 3.500 metros. Ahí, los pueblos aymara, quechua y lickanantay celebran sus carnavales y fiestas patronales con huayno y carnavalito. Para tocarlo uso flauta dulce en lugar de la quena, un bombo y unas chajchas que hice con tapitas.',
+  centro: 'Ahora la Zona Centro: el valle central, entre la cordillera de los Andes y la de la Costa, con clima mediterráneo. Es la tierra del rodeo, de las fondas y de la cueca, nuestra danza nacional. La toco con guitarra, pandero, un tormento casero hecho con un cajón y dos cucharas de palo, y palmas.',
+  cierre: 'Estos son los instrumentos que usé. Del Norte, la flauta dulce, que es un aerófono; el bombo, un membranófono; y las chajchas, un idiófono. Del Centro, la guitarra, un cordófono; el pandero, un membranófono; el tormento, un idiófono; y las palmas, que son percusión corporal. Gracias por ver.',
+};
+const tl = $('#timeline');
+for (const s of SEGMENTS) {
+  const d = h('div', { class: 't-' + s.kind, style: `flex:${s.to - s.from}`, title: `${s.part} ${fmt(s.from)}–${fmt(s.to)}` }, [h('b', { text: fmt(s.from) }), h('span', { text: s.part })]);
+  tl.append(d);
+}
+tl.append(h('div', { class: 't-free', style: 'flex:30' }, [h('b', { text: '3:30' }), h('span', { text: 'margen' })]));
+const colorOf = k => k === 'norte' ? 'var(--norte)' : k === 'centro' ? 'var(--centro)' : 'var(--talk)';
+for (const s of SEGMENTS) {
+  $('#esc-body').append(h('tr', {}, [
+    h('td', { text: `${fmt(s.from)}–${fmt(s.to)}` }),
+    h('td', {}, [h('span', { class: 'dot', style: `background:${colorOf(s.kind)}` }), h('strong', { text: s.part })]),
+    h('td', { text: s.see }), h('td', { text: s.hear }),
+  ]));
+}
+const words = t => t.split(/\s+/).length;
+for (const s of SEGMENTS.filter(s => SCRIPT[s.id])) {
+  const secs = Math.round(words(SCRIPT[s.id]) / 150 * 60);
+  $('#script').append(h('div', { class: 'card' }, [
+    h('div', { class: 'when' }, [h('strong', { text: s.part }), document.createTextNode(`${fmt(s.from)}–${fmt(s.to)} · ~${secs} s`)]),
+    h('p', { text: SCRIPT[s.id] }),
+  ]));
+}
+
+/* ---------- teleprompter ---------- */
+const tp = $('#tp'), tpText = $('#tp-text');
+let tpRun = false, tpSpeed = store.get('tpSpeed', 3), tpSize = store.get('tpSize', 44), tpLast = 0, wake = null;
+for (const s of SEGMENTS.filter(s => SCRIPT[s.id])) tpText.append(h('h4', { text: s.part }), h('p', { text: SCRIPT[s.id] }));
+const tpApply = () => { tpText.style.fontSize = tpSize + 'px'; $('#tp-speed').textContent = 'vel. ' + tpSpeed; $('#tp-play').textContent = tpRun ? 'Pausa' : 'Iniciar'; };
+const tpLoop = ts => { if (!tpRun) return; const dt = tpLast ? (ts - tpLast) / 1000 : 0; tpLast = ts; tpText.scrollTop += dt * tpSpeed * 14; requestAnimationFrame(tpLoop); };
+$('#tp-open').addEventListener('click', async () => {
+  tp.hidden = false; tpApply(); tpText.scrollTop = 0; $('#tp-play').focus();
+  try { wake = await navigator.wakeLock?.request('screen'); } catch (e) { wake = null; }
+});
+$('#tp-close').addEventListener('click', () => { tp.hidden = true; tpRun = false; try { wake?.release(); } catch (e) {} $('#tp-open').focus(); });
+$('#tp-play').addEventListener('click', () => { tpRun = !tpRun; tpLast = 0; tpApply(); if (tpRun) requestAnimationFrame(tpLoop); });
+$('#tp-slow').addEventListener('click', () => { tpSpeed = Math.max(1, tpSpeed - 1); store.set('tpSpeed', tpSpeed); tpApply(); });
+$('#tp-fast').addEventListener('click', () => { tpSpeed = Math.min(10, tpSpeed + 1); store.set('tpSpeed', tpSpeed); tpApply(); });
+$('#tp-small').addEventListener('click', () => { tpSize = Math.max(24, tpSize - 6); store.set('tpSize', tpSize); tpApply(); });
+$('#tp-big').addEventListener('click', () => { tpSize = Math.min(96, tpSize + 6); store.set('tpSize', tpSize); tpApply(); });
+$('#tp-top').addEventListener('click', () => { tpText.scrollTop = 0; });
+document.addEventListener('keydown', e => { if (!tp.hidden && e.key === 'Escape') $('#tp-close').click(); if (!tp.hidden && e.key === ' ' && e.target === document.body) { e.preventDefault(); $('#tp-play').click(); } });
+
+/* ---------- datos musicales ---------- */
+const NOTE = { SOL: 392.0, LA: 440.0, DO: 523.25, RE: 587.33 };
+// Melodía del carnavalito: [paso, duración en semicorcheas, nota] por compás (8 semicorcheas por compás de 2/4).
+const MEL = [
+  [[0, 2, 'RE'], [2, 1, 'DO'], [3, 1, 'LA'], [4, 2, 'DO'], [6, 2, 'LA']],
+  [[0, 2, 'SOL'], [2, 1, 'LA'], [3, 1, 'SOL'], [4, 4, 'SOL']],
+  [[0, 2, 'RE'], [2, 1, 'DO'], [3, 1, 'LA'], [4, 2, 'DO'], [6, 2, 'LA']],
+  [[0, 2, 'LA'], [2, 1, 'SOL'], [3, 1, 'LA'], [4, 4, 'LA']],
+  [[0, 2, 'RE'], [2, 1, 'RE'], [3, 1, 'RE'], [4, 2, 'DO'], [6, 2, 'RE']],
+  [[0, 2, 'SOL'], [2, 1, 'LA'], [3, 1, 'SOL'], [4, 4, 'SOL']],
+  [[0, 2, 'DO'], [2, 1, 'DO'], [3, 1, 'RE'], [4, 2, 'DO'], [6, 2, 'LA']],
+  [[0, 2, 'LA'], [2, 1, 'SOL'], [3, 1, 'LA'], [4, 4, 'LA']],
+];
+const MEL_CH = ['Lam', 'Sol', 'Lam', 'Lam', 'Do', 'Sol', 'Lam', 'Lam'];
+const CHORD = { G: [98.0, 123.47, 146.83, 196.0, 246.94, 392.0], D7: [146.83, 220.0, 261.63, 369.99] };
+const CUECA_CH = ['G', 'G', 'D7', 'D7', 'D7', 'D7', 'G', 'G'];
+const CH_NAME = { G: 'Sol', D7: 'Re7' };
+
+const ZONES = {
+  norte: {
+    id: 'norte', steps: 8, beatSteps: [0, 4], unit: '♩', tempo: { min: 60, max: 130, def: 90, goal: 100 },
+    stepDur: bpm => 60 / bpm / 4,
+    counts: ['1', 'e', 'y', 'a', '2', 'e', 'y', 'a'],
+    layers: [
+      { id: 'flauta', name: 'Flauta dulce', cls: 'Aerófono' },
+      { id: 'bombo', name: 'Bombo', cls: 'Membranófono', hint: 'PUM · pa ta | PUM · PUM ·', pat: ['A', '', 'x', 'x', 'A', '', 'x', ''], sym: { A: '●', x: '•' } },
+      { id: 'chajchas', name: 'Chajchas', cls: 'Idiófono', hint: 'sacude en cada corchea', pat: ['A', '', 'x', '', 'A', '', 'x', ''], sym: { A: '≋', x: '≈' } },
+    ],
+    form: [
+      { from: 1, to: 4, label: 'Introducción: bombo solo', layers: ['bombo'] },
+      { from: 5, to: 8, label: 'Entran las chajchas', layers: ['bombo', 'chajchas'] },
+      { from: 9, to: 16, label: 'Melodía A y B', layers: ['bombo', 'chajchas', 'flauta'] },
+      { from: 17, to: 24, label: 'Melodía A y B otra vez', layers: ['bombo', 'chajchas', 'flauta'] },
+      { from: 25, to: 28, label: 'Solo percusión', layers: ['bombo', 'chajchas'] },
+      { from: 29, to: 36, label: 'Melodía A y B final', layers: ['bombo', 'chajchas', 'flauta'] },
+      { from: 37, to: 37, label: 'Golpe final, todos juntos en el 1', layers: ['bombo', 'chajchas', 'flauta'], final: true },
+    ],
+    loopBars: 8,
+  },
+  centro: {
+    id: 'centro', steps: 6, beatSteps: [0, 3], unit: '♩.', tempo: { min: 60, max: 120, def: 80, goal: 100 },
+    stepDur: bpm => 60 / bpm / 3,
+    counts: ['1', '2', '3', '4', '5', '6'],
+    layers: [
+      { id: 'guitarra', name: 'Guitarra', cls: 'Cordófono', hint: 'golpe apagado · ↓ · ↓', pat: ['G', '', 'D', '', 'D', ''], sym: { G: 'G', D: '↓' } },
+      { id: 'palmas', name: 'Palmas', cls: 'Percusión corporal', hint: 'en 1 y 4', pat: ['A', '', '', 'A', '', ''], sym: { A: '●' } },
+      { id: 'pandero', name: 'Pandero', cls: 'Membranófono', hint: 'golpe en 1 y 4, sacudida en 3 y 6', pat: ['A', '', 's', 'A', '', 's'], sym: { A: '●', s: '~' } },
+      { id: 'tormento', name: 'Tormento casero', cls: 'Idiófono', hint: 'fuerte en 1 y 4, suave el resto', pat: ['A', 'x', 'x', 'A', 'x', 'x'], sym: { A: '●', x: '·' } },
+    ],
+    form: [
+      { from: 1, to: 4, label: 'Introducción: guitarra sola', layers: ['guitarra'] },
+      { from: 5, to: 8, label: 'Entran las palmas', layers: ['guitarra', 'palmas'] },
+      { from: 9, to: 36, label: 'Entran pandero y tormento: todos juntos', layers: ['guitarra', 'palmas', 'pandero', 'tormento'] },
+      { from: 37, to: 37, label: 'Golpe final, todos juntos en el 1', layers: ['guitarra', 'palmas', 'pandero', 'tormento'], final: true },
+    ],
+    loopBars: 8,
+  },
+};
+const COUNT_IN = 2;
+const formBars = z => z.form[z.form.length - 1].to;
+const sectionAt = (z, bar1) => z.form.find(s => bar1 >= s.from && bar1 <= s.to);
+
+/* ---------- audio ---------- */
+let ctx = null, master = null, noise = null;
+const ksCache = {};
+function audio() {
+  if (!ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.ratio.value = 4;
+    master = ctx.createGain(); master.gain.value = 0.85;
+    master.connect(comp); comp.connect(ctx.destination);
+    noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  if (ctx.state === 'suspended') ctx.resume();
+}
+function env(g, t, peak, a, dec) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec); }
+function nz(t, dur, type, freq, q, peak) {
+  const s = ctx.createBufferSource(); s.buffer = noise;
+  const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+  const g = ctx.createGain(); env(g, t, peak, 0.002, dur);
+  s.connect(f); f.connect(g); g.connect(master); s.start(t, Math.random() * 1.5); s.stop(t + dur + 0.05);
+}
+function tone(t, type, f0, f1, dur, peak, a = 0.003) {
+  const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f0, t);
+  if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.6);
+  const g = ctx.createGain(); env(g, t, peak, a, dur); o.connect(g); g.connect(master); o.start(t); o.stop(t + a + dur + 0.05);
+}
+const V = {
+  click(t, kind) { const f = kind === 'cue' ? 2600 : kind === 'bar' ? 1700 : 1150; tone(t, 'square', f, f, 0.03, kind === 'cue' ? 0.22 : 0.1, 0.001); },
+  bombo(t, v) { tone(t, 'sine', 115, 46, 0.42, 0.95 * v); tone(t, 'triangle', 230, 90, 0.07, 0.22 * v); nz(t, 0.03, 'lowpass', 1100, 0.7, 0.25 * v); },
+  chajchas(t, v) { for (let k = 0; k < 6; k++) nz(t + k * 0.008 + Math.random() * 0.004, 0.035, 'bandpass', 4200 + Math.random() * 3200, 3, 0.2 * v * (1 - k * 0.12)); },
+  palmas(t, v) { [0, 0.009, 0.018].forEach(d => nz(t + d, 0.012, 'bandpass', 1150, 1.2, 0.55 * v)); nz(t + 0.026, 0.11, 'bandpass', 1150, 1, 0.42 * v); },
+  jingles(t, v, dur) { for (let k = 0; k < 4; k++) nz(t + k * 0.006, dur, 'bandpass', 7200 + Math.random() * 2600, 6, 0.13 * v); nz(t, dur, 'highpass', 9000, 0.7, 0.07 * v); },
+  pandero(t, v) { tone(t, 'sine', 195, 125, 0.16, 0.5 * v); V.jingles(t, v, 0.18); },
+  sacudida(t, v) { for (let k = 0; k < 6; k++) nz(t + k * 0.011, 0.07, 'bandpass', 7000 + Math.random() * 3000, 5, 0.07 * v); },
+  tormento(t, v) { tone(t, 'sine', 790, 760, 0.06, 0.5 * v, 0.001); tone(t, 'sine', 1580, 1500, 0.03, 0.14 * v, 0.001); nz(t, 0.015, 'bandpass', 2500, 3, 0.32 * v); },
+  flute(t, freq, dur, v) {
+    const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = freq;
+    const o2 = ctx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = freq * 2;
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 5.3;
+    const lg = ctx.createGain(); lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(freq * 0.006, t + Math.min(0.25, dur * 0.7));
+    lfo.connect(lg); lg.connect(o.frequency);
+    const g = ctx.createGain(); const peak = 0.26 * v, end = t + Math.max(0.06, dur - 0.025);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.03);
+    g.gain.setValueAtTime(peak, Math.max(t + 0.031, end - 0.03)); g.gain.exponentialRampToValueAtTime(0.0001, end);
+    const g2 = ctx.createGain(); g2.gain.value = 0.07; o2.connect(g2); g2.connect(g); o.connect(g); g.connect(master);
+    [o, o2, lfo].forEach(x => { x.start(t); x.stop(end + 0.05); });
+    nz(t, 0.05, 'bandpass', freq * 2, 1.5, 0.045 * v);
+  },
+  ks(f) {
+    const key = f.toFixed(1); if (ksCache[key]) return ksCache[key];
+    const sr = ctx.sampleRate, len = Math.floor(sr * 1.6), N = Math.max(2, Math.round(sr / f));
+    const b = ctx.createBuffer(1, len, sr), d = b.getChannelData(0);
+    let prev = 0, max = 0;
+    for (let i = 0; i < N; i++) { prev = prev * 0.45 + (Math.random() * 2 - 1) * 0.55; d[i] = prev; max = Math.max(max, Math.abs(prev)); }
+    for (let i = 0; i < N; i++) d[i] /= max || 1;
+    for (let i = N; i < len; i++) d[i] = 0.4985 * (d[i - N] + (i - N - 1 >= 0 ? d[i - N - 1] : 0));
+    return (ksCache[key] = b);
+  },
+  strum(t, chord, v, muted) {
+    CHORD[chord].forEach((f, i) => {
+      const s = ctx.createBufferSource(); s.buffer = V.ks(f);
+      const g = ctx.createGain(), tt = t + i * 0.012;
+      g.gain.setValueAtTime(0.0001, t); g.gain.setValueAtTime(0.2 * v, tt);
+      if (muted) g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.05);
+      else { g.gain.setValueAtTime(0.2 * v, tt + 0.45); g.gain.exponentialRampToValueAtTime(0.0001, tt + 1.4); }
+      s.connect(g); g.connect(master); s.start(tt); s.stop(tt + 1.5);
+    });
+  },
+  golpe(t, chord, v) { V.strum(t, chord, v * 0.9, true); nz(t, 0.045, 'bandpass', 950, 0.8, 0.5 * v); tone(t, 'sine', 130, 80, 0.06, 0.28 * v); },
+};
+
+/* ---------- reproductor ---------- */
+const UI = {};
+const P = { z: null, playing: false, mode: 'loop', bar: 0, step: 0, next: 0, timer: null, queue: [], endAt: 0 };
+
+function zoneState(id) {
+  const z = ZONES[id];
+  if (!z.state) {
+    const saved = store.get('zone-' + id, {});
+    z.state = { tempo: saved.tempo || z.tempo.def, mode: 'loop', on: Object.assign({ click: true }, ...z.layers.map(l => ({ [l.id]: true })), saved.on || {}) };
+  }
+  return z.state;
+}
+const save = z => store.set('zone-' + z.id, { tempo: z.state.tempo, on: z.state.on });
+
+function playStep(z, bar, step, t) {
+  const st = z.state;
+  if (bar < 0) { // cuenta
+    const bi = z.beatSteps.indexOf(step);
+    if (bi >= 0) V.click(t, bar === -1 && bi === 0 ? 'cue' : 'beat');
+    return;
+  }
+  const form = P.mode === 'form';
+  const sec = form ? sectionAt(z, bar + 1) : null;
+  const active = id => st.on[id] && (!sec || sec.layers.includes(id));
+  const final = sec && sec.final;
+  if (st.on.click && z.beatSteps.includes(step) && !(final && step > 0)) V.click(t, step === 0 ? 'bar' : 'beat');
+  if (final && step > 0) return;
+  if (z.id === 'norte') {
+    const bp = z.layers[1].pat[step], cp = z.layers[2].pat[step];
+    if (active('bombo') && bp) V.bombo(t, bp === 'A' ? 1 : 0.6);
+    if (active('chajchas') && cp) V.chajchas(t, cp === 'A' ? 1 : 0.65);
+    if (active('flauta')) {
+      const sd = z.stepDur(st.tempo);
+      if (final) { if (step === 0) V.flute(t, NOTE.LA, sd * 6, 1); }
+      else {
+        const mi = form ? (bar - (sec.from - 1)) % 8 : bar % 8;
+        const n = MEL[mi].find(e => e[0] === step);
+        if (n) V.flute(t, NOTE[n[2]], n[1] * sd, 1);
+      }
+    }
+  } else {
+    const chord = final ? 'G' : CUECA_CH[bar % 8];
+    const gp = z.layers[0].pat[step], pp = z.layers[1].pat[step], np = z.layers[2].pat[step], tp = z.layers[3].pat[step];
+    if (active('guitarra') && gp) { if (final) V.strum(t, 'G', 1.1, false); else if (gp === 'G') V.golpe(t, chord, 1); else V.strum(t, chord, 0.9, false); }
+    if (active('palmas') && pp) V.palmas(t, 0.9);
+    if (active('pandero') && np) { if (np === 'A') V.pandero(t, 1); else V.sacudida(t, 1); }
+    if (active('tormento') && tp) V.tormento(t, tp === 'A' ? 1 : 0.5);
+  }
+}
+
+function schedule() {
+  const z = P.z, sd = z.stepDur(z.state.tempo);
+  while (P.playing && !P.endAt && P.next < ctx.currentTime + 0.12) {
+    playStep(z, P.bar, P.step, P.next);
+    P.queue.push({ t: P.next, bar: P.bar, step: P.step });
+    P.next += sd; P.step++;
+    if (P.step >= z.steps) {
+      P.step = 0; P.bar++;
+      if (P.mode === 'loop' && P.bar >= z.loopBars) P.bar = 0;
+      if (P.mode === 'form' && P.bar >= formBars(z)) { P.endAt = P.next + 1.2; }
+    }
+  }
+  if (P.endAt && ctx.currentTime > P.endAt) stop();
+}
+
+function start(id) {
+  audio(); stop();
+  const z = ZONES[id]; P.z = z; P.mode = z.state.mode; P.playing = true; P.endAt = 0;
+  P.bar = P.mode === 'form' ? -COUNT_IN : 0; P.step = 0; P.next = ctx.currentTime + 0.12; P.queue = [];
+  P.timer = setInterval(schedule, 25); schedule();
+  UI[id].playBtn.innerHTML = ICON.stop; UI[id].playBtn.setAttribute('aria-label', 'Detener');
+  requestAnimationFrame(draw);
+}
+function stop() {
+  if (P.timer) clearInterval(P.timer);
+  P.timer = null; P.playing = false; P.queue = [];
+  if (P.z) { const u = UI[P.z.id]; u.playBtn.innerHTML = ICON.play; u.playBtn.setAttribute('aria-label', 'Reproducir'); clearNow(P.z); restRec(P.z); }
+}
+function clearNow(z) { $$('.now', UI[z.id].scope).forEach(e => e.classList.remove('now')); }
+
+function draw() {
+  if (!P.playing) return;
+  let cur = null;
+  while (P.queue.length && P.queue[0].t <= ctx.currentTime) cur = P.queue.shift();
+  if (cur) paint(P.z, cur);
+  requestAnimationFrame(draw);
+}
+function paint(z, { bar, step }) {
+  const u = UI[z.id]; clearNow(z);
+  if (bar >= 0) {
+    const sec = P.mode === 'form' ? sectionAt(z, bar + 1) : null;
+    if (!(sec && sec.final && step > 0)) $$(`.cell[data-step="${step}"]`, u.seq).forEach(c => c.classList.add('now'));
+    if (z.id === 'norte') {
+      const fl = !sec || sec.layers.includes('flauta');
+      if (fl && !(sec && sec.final)) {
+        const mi = sec ? (bar - (sec.from - 1)) % 8 : bar % 8;
+        const mb = u.melody.children[mi]; mb.classList.add('now');
+        const n = $$('.note', mb).find(e => step >= +e.dataset.s && step < +e.dataset.s + +e.dataset.l); if (n) n.classList.add('now');
+      }
+    } else {
+      u.prog.children[sec && sec.final ? 0 : bar % 8].classList.add('now');
+    }
+  }
+  if (P.mode === 'form') paintRec(z, bar, step); else u.loopInfo.textContent = `Compás ${bar % z.loopBars + 1} de ${z.loopBars} (se repite)`;
+}
+function paintRec(z, bar, step) {
+  const u = UI[z.id], total = formBars(z);
+  if (bar < 0) {
+    const bi = z.beatSteps.indexOf(step);
+    u.recBig.textContent = bar === -1 && bi === 0 ? '¡Palmada!' : bi >= 0 ? String(bi + 1) : u.recBig.textContent;
+    u.recMeta.textContent = 'Cuenta de entrada: aplaude frente a la cámara en el clic agudo';
+    u.recBar.style.width = '0%'; u.recNext.textContent = 'Compás 1: ' + z.form[0].label;
+    return;
+  }
+  const b1 = bar + 1, sec = sectionAt(z, b1), idx = z.form.indexOf(sec), nx = z.form[idx + 1];
+  u.recBig.textContent = sec.label;
+  u.recMeta.textContent = `Compás ${b1} de ${total}`;
+  u.recBar.style.width = ((bar * z.steps + step + 1) / (total * z.steps) * 100).toFixed(1) + '%';
+  u.recNext.textContent = nx ? `En el compás ${nx.from}: ${nx.label.toLowerCase()}` : 'Deja sonar y detén la grabación';
+  $$('li', u.formList).forEach((li, i) => li.classList.toggle('now', i === idx));
+}
+function restRec(z) {
+  const u = UI[z.id]; if (!u.recBig) return;
+  u.recBig.textContent = 'Listo para grabar';
+  u.recMeta.textContent = `Duración a este tempo: ${fmt(formDur(z))} más la cuenta`;
+  u.recNext.textContent = 'Presiona reproducir después de empezar a grabar en el celular.';
+  u.recBar.style.width = '0%'; u.loopInfo.textContent = '';
+}
+const formDur = z => formBars(z) * z.steps * z.stepDur(z.state.tempo);
+
+/* ---------- figuras: digitación y acordes ---------- */
+function recorderSVG(covered) {
+  const holes = [[14, 18], [34, 34], [34, 58], [34, 82], [34, 116], [34, 140], [34, 164], [34, 188]];
+  let s = `<svg width="56" height="206" viewBox="0 0 56 206" role="img"><rect x="22" y="4" width="24" height="198" rx="12" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"/>`;
+  holes.forEach(([x, y], i) => { const on = covered.includes(i); s += `<circle cx="${x}" cy="${y}" r="${i === 0 ? 6 : 7}" fill="${on ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"${i === 0 ? ' stroke-dasharray="3 2"' : ''}/>`; });
+  s += `<line x1="24" y1="100" x2="44" y2="100" stroke="currentColor" stroke-width="1" opacity=".4"/></svg>`;
+  return s;
+}
+function chordSVG(frets) {
+  const x0 = 16, y0 = 22, dx = 18, dy = 22;
+  let s = `<svg width="124" height="140" viewBox="0 0 124 140" role="img"><rect x="${x0}" y="${y0 - 3}" width="${dx * 5}" height="3" fill="currentColor"/>`;
+  for (let i = 0; i < 6; i++) s += `<line x1="${x0 + i * dx}" y1="${y0}" x2="${x0 + i * dx}" y2="${y0 + dy * 4}" stroke="currentColor" stroke-width="1.2"/>`;
+  for (let j = 1; j <= 4; j++) s += `<line x1="${x0}" y1="${y0 + j * dy}" x2="${x0 + 5 * dx}" y2="${y0 + j * dy}" stroke="currentColor" stroke-width="1" opacity=".6"/>`;
+  frets.forEach((f, i) => {
+    const x = x0 + i * dx;
+    if (f === 'x') s += `<text x="${x}" y="14" text-anchor="middle" font-size="12" font-family="monospace" fill="currentColor">×</text>`;
+    else if (f === 0) s += `<circle cx="${x}" cy="10" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/>`;
+    else s += `<circle cx="${x}" cy="${y0 + (f - 0.5) * dy}" r="7" fill="currentColor"/>`;
+  });
+  ['Mi', 'La', 'Re', 'Sol', 'Si', 'mi'].forEach((n, i) => { s += `<text x="${x0 + i * dx}" y="${y0 + dy * 4 + 16}" text-anchor="middle" font-size="9" font-family="monospace" fill="currentColor" opacity=".7">${n}</text>`; });
+  return s + '</svg>';
+}
+const ICON = {
+  play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg>',
+  stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1.5" fill="currentColor"/></svg>',
+};
+
+/* ---------- construir atriles ---------- */
+for (const root of $$('.controls[data-zone]')) {
+  const id = root.dataset.zone, z = ZONES[id], st = zoneState(id), u = (UI[id] = { root, scope: root.parentElement });
+  const unitLabel = v => `${z.unit} = ${v}`;
+
+  const playBtn = h('button', { class: 'play', type: 'button', 'aria-label': 'Reproducir', html: ICON.play, onclick: () => (P.playing && P.z === z ? stop() : start(id)) });
+  u.playBtn = playBtn;
+  const out = h('output', { text: unitLabel(st.tempo) });
+  const range = h('input', { type: 'range', id: 'tempo-' + id, min: z.tempo.min, max: z.tempo.max, step: 1, value: st.tempo, 'aria-label': 'Tempo' });
+  range.addEventListener('input', () => { st.tempo = +range.value; out.textContent = unitLabel(st.tempo); save(z); if (!P.playing || P.z !== z) restRec(z); });
+  const tempo = h('div', { class: 'tempo' }, [h('span', { class: 'small muted', text: 'Tempo' }), range, out]);
+  const goal = h('span', { class: 'small muted', text: `Meta: ${unitLabel(z.tempo.goal)}. Empieza más lento y sube de a poco.` });
+
+  const modeBtns = [['loop', 'Practicar en loop'], ['form', 'Pista para grabar']].map(([m, label]) => h('button', { type: 'button', 'aria-pressed': String(st.mode === m), text: label, onclick: () => setMode(m) }));
+  const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Modo' }, modeBtns);
+
+  const layers = h('div', { class: 'layers', role: 'group', 'aria-label': 'Capas que suenan' });
+  for (const l of [...z.layers, { id: 'click', name: 'Clic' }]) {
+    const cb = h('input', { type: 'checkbox', id: `on-${id}-${l.id}` }); cb.checked = !!st.on[l.id];
+    cb.addEventListener('change', () => { st.on[l.id] = cb.checked; save(z); $$(`.r[data-layer="${l.id}"] .cell`, root).forEach(c => c.classList.toggle('off', !cb.checked)); });
+    layers.append(h('label', { for: cb.id }, [cb, document.createTextNode(l.name)]));
+  }
+
+  // cuadrícula de pasos
+  const seq = h('div', { class: 'seq', style: `--n:${z.steps}` });
+  if (id === 'centro') {
+    seq.append(h('div', { class: 'r' }, [h('div', { class: 'lab' }, [h('span', { text: 'percusión' })]), h('div', { class: 'grp g68', style: 'grid-column: span 3', text: '6/8 · 1 2 3' }), h('div', { class: 'grp g68', style: 'grid-column: span 3', text: '4 5 6' })]));
+    seq.append(h('div', { class: 'r' }, [h('div', { class: 'lab' }, [h('span', { text: 'guitarra' })]), h('div', { class: 'grp g34', style: 'grid-column: span 2', text: '3/4 · 1 2' }), h('div', { class: 'grp g34', style: 'grid-column: span 2', text: '3 4' }), h('div', { class: 'grp g34', style: 'grid-column: span 2', text: '5 6' })]));
+  }
+  seq.append(h('div', { class: 'r' }, [h('div', { class: 'lab' }), ...z.counts.map((c, i) => h('div', { class: 'h' + (z.beatSteps.includes(i) ? ' beat' : '') + (id === 'norte' && i === 4 ? ' gap-l' : ''), text: c }))]));
+  for (const l of z.layers.filter(l => l.pat)) {
+    const r = h('div', { class: 'r', 'data-layer': l.id }, [h('div', { class: 'lab' }, [h('b', { text: l.name }), h('span', { text: `${l.cls} · ${l.hint}` })])]);
+    l.pat.forEach((p, i) => {
+      const accent = p === 'A' || p === 'G';
+      r.append(h('div', { class: 'cell' + (p ? (accent ? ' acc' : ' hit') : '') + (id === 'norte' && i === 4 ? ' gap-l' : '') + (st.on[l.id] ? '' : ' off'), 'data-step': i, text: p ? l.sym[p] : '' }));
+    });
+    seq.append(r);
+  }
+  u.seq = seq;
+  const legend = id === 'norte'
+    ? 'Celda llena = golpe fuerte · celda con borde = golpe suave. Las chajchas se sacuden hacia abajo en cada corchea.'
+    : 'G = golpe apagado (palma sobre las cuerdas) · ↓ = rasgueo hacia abajo · ● = golpe fuerte · ~ = sacudida del pandero · · = golpe suave.';
+
+  // panel de melodía o de acordes
+  let extra;
+  if (id === 'norte') {
+    const mel = h('div', { class: 'melody' });
+    MEL.forEach((bar, bi) => {
+      const notes = h('div', { class: 'notes' });
+      bar.forEach(([s, l, n], k) => notes.append(h('div', { class: 'note', 'data-s': s, 'data-l': l, style: `grid-column: ${s + 1} / span ${l}`, text: k === 0 || s === 4 ? n : n.toLowerCase() })));
+      mel.append(h('div', { class: 'mbar' }, [h('div', { class: 'ch' }, [h('span', { text: (bi < 4 ? 'A' : 'B') + ' · ' + (bi + 1) }), h('span', { text: MEL_CH[bi] })]), notes]));
+    });
+    u.melody = mel;
+    const figs = h('div', { class: 'figs' }, [['SOL', [0, 1, 2, 3]], ['LA', [0, 1, 2]], ['DO', [0, 2]], ['RE', [2]]].map(([n, c]) => h('div', { class: 'fig', html: recorderSVG(c) + `<span>${n}</span>` })));
+    extra = h('div', { class: 'card', style: 'display:grid;gap:12px' }, [
+      h('h3', { text: 'Melodía para flauta dulce' }),
+      h('p', { class: 'small muted', text: 'Ocho compases que se repiten. Cada nota larga ocupa un tiempo; las cortas van de a dos, como el TAM ti-ti del bombo. Articula cada nota con la sílaba «tu». Arriba a la derecha de cada compás va el acorde, solo como referencia.' }),
+      mel,
+      h('p', { class: 'small muted', text: 'Digitación (vista de frente, el círculo punteado es el pulgar por detrás; lleno = tapado):' }),
+      figs,
+    ]);
+  } else {
+    const prog = h('div', { class: 'prog' }, CUECA_CH.map(c => h('div', { text: CH_NAME[c] })));
+    u.prog = prog;
+    extra = h('div', { class: 'card', style: 'display:grid;gap:12px' }, [
+      h('h3', { text: 'Guitarra: dos acordes' }),
+      h('p', { class: 'small', text: 'Un compás de rasgueo por casilla: golpe apagado en 1 (la palma derecha cae sobre las cuerdas y suena «chas»), rasgueo hacia abajo en 3 y en 5. Es el patrón básico de cueca que enseña Gabriel Montt para Berklee PULSE.' }),
+      prog,
+      h('div', { class: 'figs' }, [h('div', { class: 'fig', html: chordSVG([3, 2, 0, 0, 0, 3]) + '<span>Sol</span><small>320003</small>' }), h('div', { class: 'fig', html: chordSVG(['x', 'x', 0, 2, 1, 2]) + '<span>Re7</span><small>xx0212</small>' })]),
+      h('div', { class: 'note-box', text: 'Si los acordes te cuestan: toca el mismo ritmo con las cuerdas apagadas (mano izquierda apoyada sin presionar). Sigue siendo un cordófono y la cueca se reconoce igual.' }),
+    ]);
+  }
+
+  // panel de grabación
+  u.recBig = h('div', { class: 'big' }); u.recMeta = h('div', { class: 'meta' }); u.recNext = h('div', { class: 'small' });
+  u.recBar = h('i'); u.loopInfo = h('div', { class: 'small muted mono', 'aria-live': 'off' });
+  u.formList = h('ol', { class: 'form' }, z.form.map(s => h('li', {}, [h('span', { text: s.from === s.to ? `${s.from}` : `${s.from}–${s.to}` }), h('span', { text: s.label })])));
+  const rec = h('div', { class: 'rec' }, [h('div', { class: 'eyebrow', text: 'Pista para grabar' }), u.recBig, u.recMeta, h('div', { class: 'bar' }, [u.recBar]), u.recNext]);
+  const formCard = h('div', { class: 'card', style: 'display:grid;gap:8px' }, [h('h3', { text: 'Forma completa (compases)' }), u.formList]);
+
+  function setMode(m) {
+    if (P.playing && P.z === z) stop();
+    st.mode = m; modeBtns.forEach((b, i) => b.setAttribute('aria-pressed', String((i === 0 ? 'loop' : 'form') === m)));
+    rec.hidden = m !== 'form'; restRec(z);
+  }
+
+  root.append(
+    h('div', { class: 'row' }, [playBtn, tempo]), goal,
+    h('div', { class: 'row' }, [seg]),
+    h('div', {}, [h('div', { class: 'small muted', style: 'margin-bottom:6px', text: 'Capas que suenan (apaga la tuya cuando grabes):' }), layers]),
+    rec, u.loopInfo,
+    h('div', { class: 'grid-x' }, [seq]), h('p', { class: 'small muted', text: legend }),
+  );
+  root.after(h('div', { class: 'two', style: 'margin-top:16px' }, [extra, formCard]));
+  const tips = id === 'norte' ? [
+    ['Bombo', 'Membranófono', 'Golpea al centro del parche. El PUM del 1 y del 2 va fuerte; el pa-ta, suave y cerca. Es la base: graba esta capa primero.'],
+    ['Chajchas', 'Idiófono', 'Sacude el manojo hacia abajo en cada corchea, marcando más el 1 y el 2. Entran en el compás 5.'],
+    ['Flauta dulce', 'Aerófono', 'Entra en el compás 9. Si la velocidad cuesta, practica con el tempo en 70 y sube de a 5.'],
+  ] : [
+    ['Guitarra', 'Cordófono', 'Toca sola los primeros 4 compases. Es la base de la cueca: graba esta capa primero.'],
+    ['Palmas', 'Percusión corporal', 'Dos palmas por compás, en 1 y 4. Entran en el compás 5.'],
+    ['Pandero', 'Membranófono', 'Golpe con la palma en 1 y 4, sacudida corta en 3 y 6. Entra en el compás 9.'],
+    ['Tormento casero', 'Idiófono', 'Corcheas seguidas con dos cucharas de palo: fuerte en 1 y 4, suave el resto. Entra en el compás 9.'],
+  ];
+  root.parentElement.append(h('div', { class: 'tips', style: 'margin-top:16px' }, tips.map(([n, c, t]) => h('div', { class: 'card' }, [h('b', { text: n }), h('span', { class: 'cls', text: c }), h('p', { class: 'small', text: t })]))));
+  setMode(st.mode);
+}
+
+/* ---------- lista ---------- */
+const CHECKS = [
+  ['Preparación', ['Conseguir guitarra, pandero, tambor y flauta dulce', 'Fabricar las chajchas caseras', 'Armar el tormento casero', 'Tocar el carnavalito con la guía a ♩ = 100', 'Tocar la cueca con la guía a ♩. = 100', 'Leer el guion en voz alta con el teleprompter']],
+  ['Grabación', ['Inicio a cámara', 'Zona Norte a cámara', 'Carnavalito: bombo, chajchas y flauta', 'Zona Centro a cámara', 'Cueca: guitarra, palmas, pandero y tormento', 'Cierre mostrando cada instrumento']],
+  ['Edición y entrega', ['Video armado con las 5 placas', 'Duración menor a 4:00', 'Revisar que el pandero tenga parche y el bombo sea membranófono (o corregir la ficha)', 'Subir el video y la ficha']],
+];
+const done = store.get('checks', {});
+let totalChecks = 0;
+for (const [title, items] of CHECKS) {
+  const card = h('div', { class: 'card' }, [h('h3', { text: title })]);
+  items.forEach((txt, i) => {
+    const key = title + ':' + i; totalChecks++;
+    const cb = h('input', { type: 'checkbox', id: 'chk-' + totalChecks }); cb.checked = !!done[key];
+    cb.addEventListener('change', () => { done[key] = cb.checked; store.set('checks', done); progress(); });
+    card.append(h('label', { for: cb.id }, [cb, h('span', { text: txt })]));
+  });
+  $('#checks').append(card);
+}
+function progress() {
+  const n = Object.values(done).filter(Boolean).length;
+  $('#prog-label').textContent = `${n} de ${totalChecks} pasos`;
+  $('#prog-bar').style.width = (n / totalChecks * 100) + '%';
+}
+progress();
+document.addEventListener('visibilitychange', () => { if (document.hidden && P.playing) stop(); });
+})();
+</script>
+
+</html>
